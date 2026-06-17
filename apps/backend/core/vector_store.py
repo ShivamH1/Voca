@@ -1,76 +1,61 @@
-import os
 from langchain_qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient
-from qdrant_client.http.models import Distance, VectorParams
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import Distance, VectorParams
+from config import (
+    QDRANT_URL,
+    QDRANT_API_KEY,
+    QDRANT_LOCAL_PATH,
+    EMBEDDING_MODEL,
+    VECTOR_CHUNK_SIZE,
+    VECTOR_CHUNK_OVERLAP,
+)
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
+_embeddings = HuggingFaceEmbeddings(
+    model_name=EMBEDDING_MODEL, model_kwargs={"device": "cpu"}
 )
 
 
 def get_client() -> QdrantClient:
-    """
-    Initialize and return QdrantClient based on environment variables.
-    """
-    qdrant_url = os.getenv("QDRANT_URL")
-    qdrant_api_key = os.getenv("QDRANT_API_KEY")
-
-    if qdrant_url and qdrant_api_key:
-        return QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
-    else:
-        db_path = os.path.join(os.getcwd(), "qdrant_db")
-        return QdrantClient(path=db_path)
+    if QDRANT_URL and QDRANT_API_KEY:
+        return QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+    return QdrantClient(path=QDRANT_LOCAL_PATH)
 
 
 def build_vector_store(
     transcript: str, collection_name: str = "meeting_transcript"
 ) -> QdrantVectorStore:
-    """
-    Split the transcript into smaller chunks, embed them,
-    and persist them in Qdrant (either locally or in Qdrant Cloud).
-    """
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-    chunks = splitter.split_text(transcript)
-
+    """Embed the transcript and persist it in a new Qdrant collection."""
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=VECTOR_CHUNK_SIZE, chunk_overlap=VECTOR_CHUNK_OVERLAP
+    )
     docs = [
         Document(page_content=chunk, metadata={"chunk_index": i})
-        for i, chunk in enumerate(chunks)
+        for i, chunk in enumerate(splitter.split_text(transcript))
     ]
 
     client = get_client()
-
-    vector_size = len(embeddings.embed_query("test"))
-
+    vector_size = len(_embeddings.embed_query("test"))
     client.recreate_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
     )
 
-    vector_store = QdrantVectorStore(
-        client=client, collection_name=collection_name, embedding=embeddings
+    store = QdrantVectorStore(
+        client=client, collection_name=collection_name, embedding=_embeddings
     )
-    vector_store.add_documents(docs)
-
-    return vector_store
+    store.add_documents(docs)
+    return store
 
 
 def load_vector_store(collection_name: str = "meeting_transcript") -> QdrantVectorStore:
-    """
-    Load the Qdrant database (either from local disk or cloud) for querying.
-    """
-    client = get_client()
-    vector_store = QdrantVectorStore(
-        client=client, collection_name=collection_name, embedding=embeddings
+    """Load an existing Qdrant collection for querying."""
+    return QdrantVectorStore(
+        client=get_client(), collection_name=collection_name, embedding=_embeddings
     )
-    return vector_store
 
 
 def get_retriever(vector_store: QdrantVectorStore, k: int = 4):
-    """
-    Return a similarity retriever from the vector store.
-    """
-    result = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": k})
-    return result
+    return vector_store.as_retriever(search_type="similarity", search_kwargs={"k": k})

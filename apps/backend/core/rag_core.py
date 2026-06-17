@@ -1,45 +1,24 @@
-import os
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from utils.llm import get_llm
 from core.vector_store import build_vector_store, load_vector_store, get_retriever
+from core import prompts
 
 
-def format_docs(docs):
-    return "\n\n".join([doc.page_content for doc in docs])
+def _format_docs(docs) -> str:
+    return "\n\n".join(doc.page_content for doc in docs)
 
 
-def build_rag(transcript: str):
-    """
-    Builds the RAG chain for answering questions about the transcript
-    """
-    vector_store = build_vector_store(transcript)
-    retriever = get_retriever(vector_store, k=4)
-
+def _make_rag_chain(retriever):
     llm = get_llm()
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """You are an expert meeting assistant. Answer the user's question based ONLY on the meeting transcript context provided below.
-
-                If the answer is not found in the context, say: 
-                "I could not find this information in the meeting transcript."
-
-                Always be concise and precise. If quoting someone, mention it clearly.
-
-                Context from meeting transcript:
-                {context}""",
-            ),
-            ("human", "{question}"),
-        ]
-    )
-
-    rag_chain = (
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", prompts.RAG_SYSTEM),
+        ("human", "{question}"),
+    ])
+    return (
         {
-            "context": retriever | RunnableLambda(format_docs),
+            "context": retriever | RunnableLambda(_format_docs),
             "question": RunnablePassthrough(),
         }
         | prompt
@@ -47,46 +26,45 @@ def build_rag(transcript: str):
         | StrOutputParser()
     )
 
-    return rag_chain
+
+def build_rag(transcript: str, collection_name: str = "meeting_transcript"):
+    """Index transcript and return a ready RAG chain."""
+    vector_store = build_vector_store(transcript, collection_name=collection_name)
+    return _make_rag_chain(get_retriever(vector_store, k=4))
 
 
-def load_rag_chain():
-    vector_store = load_vector_store()
-    retriever = get_retriever(vector_store)
-
-    llm = get_llm()
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """You are an expert meeting assistant. Answer the user's question based ONLY on the meeting transcript context provided below.
-
-                    If the answer is not found in the context, say: "I could not find this information in the meeting transcript."
-
-                    Always be concise and precise. If quoting someone, mention it clearly.
-
-                    Context from meeting transcript:
-                    {context}""",
-            ),
-            ("human", "{question}"),
-        ]
-    )
-
-    rag_chain = (
-        {
-            "context": retriever | RunnableLambda(format_docs),
-            "question": RunnablePassthrough(),
-        }
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
-
-    return rag_chain
+def load_rag_chain(collection_name: str = "meeting_transcript"):
+    """Load an existing Qdrant collection and return a RAG chain."""
+    vector_store = load_vector_store(collection_name=collection_name)
+    return _make_rag_chain(get_retriever(vector_store))
 
 
 def ask_question(rag_chain, question: str) -> str:
-    print(f"Question : {question}")
+    print(f"Q: {question}")
     answer = rag_chain.invoke(question)
-    print(f"answer :{answer}")
+    print(f"A: {answer[:120]}...")
     return answer
+
+
+def close_rag_client(rag_chain) -> None:
+    """
+    Navigate the LangChain LCEL chain to close the underlying QdrantClient.
+    Required on Windows to release the local qdrant_db file lock.
+
+    Chain structure: RunnableSequence → steps[0] is RunnableParallel
+      → steps["context"] is RunnableSequence → steps[0] is VectorStoreRetriever
+      → .vectorstore is QdrantVectorStore → .client is QdrantClient
+    """
+    try:
+        steps = getattr(rag_chain, "steps", [])
+        if steps:
+            context_chain = getattr(steps[0], "steps", {}).get("context")
+            if context_chain:
+                context_steps = getattr(context_chain, "steps", [])
+                if context_steps:
+                    retriever = context_steps[0]
+                    vs = getattr(retriever, "vectorstore", None)
+                    if vs and hasattr(vs, "client"):
+                        vs.client.close()
+    except Exception:
+        pass

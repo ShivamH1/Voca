@@ -1,14 +1,15 @@
 from langchain_mistralai import ChatMistralAI
-import os
-from dotenv import load_dotenv
-load_dotenv(dotenv_path=".env.local")
-load_dotenv(dotenv_path=".env")
+from config import MISTRAL_API_KEY, MISTRAL_MODEL, MISTRAL_TEMPERATURE
 
-MISTRAL_API = os.getenv("MISTRAL_API_KEY")
-MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
+_llm: ChatMistralAI | None = None
 
 
-def get_llm():
-    return ChatMistralAI(
-        model=MISTRAL_MODEL, mistral_api_key=MISTRAL_API, temperature=0.3
-    )
+def get_llm() -> ChatMistralAI:
+    global _llm
+    if _llm is None:
+        _llm = ChatMistralAI(
+            model=MISTRAL_MODEL,
+            mistral_api_key=MISTRAL_API_KEY,
+            temperature=MISTRAL_TEMPERATURE,
+        )
+    return _llm
