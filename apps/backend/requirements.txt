@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+yt-dlp
+pydub
+huggingface-hub
+requests
+langchain-core
+langchain-mistralai
+langchain-chroma
+langchain-community
+sentence-transformers
