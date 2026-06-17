@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MISTRAL_API = os.getenv("MISTRAL_API_KEY")
-MISTRAL_MODEL = os.getenv("MISTRAL_MODEL")
+MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
 
 
 def get_llm():

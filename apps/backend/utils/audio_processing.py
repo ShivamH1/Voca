@@ -1,7 +1,5 @@
 import yt_dlp
 import os
-
-# pyrefly: ignore [missing-import]
 from pydub import AudioSegment
 
 DOWNLOAD_DIR = "downloads"

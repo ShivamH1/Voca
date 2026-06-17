@@ -1,8 +1,6 @@
 from utils.hf_client import client
 import os
 import requests
-
-# pyrefly: ignore [missing-import]
 from pydub import AudioSegment
 
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "openai/whisper-small")
