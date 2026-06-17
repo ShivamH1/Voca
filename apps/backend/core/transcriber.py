@@ -20,15 +20,11 @@ def transcribe_chunk_whisper(chunk_path: str) -> str:
     Transcribes an audio chunk using the Hugging Face InferenceClient
     instead of a locally loaded Whisper instance.
     """
-    # 1. Read the audio chunk file as binary data
-    with open(chunk_path, "rb") as f:
-        audio_bytes = f.read()
+    # Call the Hugging Face Serverless Inference API passing the path directly
+    # to let huggingface_hub automatically detect the correct Content-Type header.
+    result = client.automatic_speech_recognition(chunk_path, model=WHISPER_MODEL)
 
-    # 2. Call the Hugging Face Serverless Inference API
-    # This completely replaces 'load_model()' and 'model.transcribe()'
-    result = client.automatic_speech_recognition(audio_bytes, model=WHISPER_MODEL)
-
-    # 3. Return the transcribed text (Hugging Face returns an object with a .text attribute)
+    # Return the transcribed text (Hugging Face returns an object with a .text attribute)
     return result.text
 
 

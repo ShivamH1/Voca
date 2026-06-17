@@ -11,3 +11,5 @@ langchain-mistralai
 langchain-chroma
 langchain-community
 sentence-transformers
+audioop-lts; python_version >= "3.13"
+static-ffmpeg

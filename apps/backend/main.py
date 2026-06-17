@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import static_ffmpeg
+
+static_ffmpeg.add_paths()
 
 app = FastAPI()
 
