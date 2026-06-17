@@ -40,3 +40,4 @@ yarn-error.log*
 learning_guide.md
 __pycache__
 downloads
+qdrant_db

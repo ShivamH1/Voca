@@ -8,8 +8,10 @@ huggingface-hub
 requests
 langchain-core
 langchain-mistralai
-langchain-chroma
+langchain-qdrant
+qdrant-client
 langchain-community
 sentence-transformers
+langchain-huggingface
 audioop-lts; python_version >= "3.13"
 static-ffmpeg
