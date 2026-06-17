@@ -72,12 +72,12 @@ def transcribe_chunk_sarvam(chunk_path: str) -> str:
         piece_path = f"{chunk_path}_sv_{i}.wav"
         piece.export(piece_path, format="wav")
 
-    try:
-        print(f"  → Sarvam piece {i + 1}/{total_pieces} ...")
-        full_text += _send_to_sarvam(piece_path) + " "
-    finally:
-        if os.path.exists(piece_path):
-            os.remove(piece_path)
+        try:
+            print(f"  → Sarvam piece {i + 1}/{total_pieces} ...")
+            full_text += _send_to_sarvam(piece_path) + " "
+        finally:
+            if os.path.exists(piece_path):
+                os.remove(piece_path)
 
     return full_text.strip()
 
