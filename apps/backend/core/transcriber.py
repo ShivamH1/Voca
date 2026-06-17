@@ -20,7 +20,9 @@ def transcribe_chunk_whisper(chunk_path: str) -> str:
     """
     # Call the Hugging Face Serverless Inference API passing the path directly
     # to let huggingface_hub automatically detect the correct Content-Type header.
-    result = client.automatic_speech_recognition(chunk_path, model=WHISPER_MODEL)
+    result = client.automatic_speech_recognition(
+        chunk_path, model=WHISPER_MODEL
+    )
 
     # Return the transcribed text (Hugging Face returns an object with a .text attribute)
     return result.text
