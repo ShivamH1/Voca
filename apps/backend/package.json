@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nodemon --watch . --ext py --exec .venv/Scripts/python -m uvicorn main:app --port 8000",
+    "dev": ".venv/Scripts/python -m uvicorn main:app --port 8000 --reload --reload-dir . --reload-exclude .venv --reload-exclude qdrant_db --reload-exclude downloads",
     "build": "echo 'No build step required for FastAPI'"
   }
 }
