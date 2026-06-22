@@ -1,134 +1,144 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState, useCallback, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { analyzeSourceStream, saveResult } from '@/lib/api'
+import { useEffect, useRef, useState, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { analyzeSourceStream, saveResult } from "@/lib/api";
 
-type StepStatus = 'pending' | 'active' | 'done' | 'error'
+type StepStatus = "pending" | "active" | "done" | "error";
 
 interface Step {
-  label: string
-  pendingSub: string
-  activeSub: string
-  doneSub: string
-  errorSub: string
+  label: string;
+  pendingSub: string;
+  activeSub: string;
+  doneSub: string;
+  errorSub: string;
 }
 
 const STEPS: Step[] = [
   {
-    label: 'Audio Processing',
-    pendingSub: 'Waiting...',
-    activeSub: 'Downloading & chunking audio...',
-    doneSub: 'Audio ready',
-    errorSub: 'Audio processing failed',
+    label: "Audio Processing",
+    pendingSub: "Waiting...",
+    activeSub: "Downloading & chunking audio...",
+    doneSub: "Audio ready",
+    errorSub: "Audio processing failed",
   },
   {
-    label: 'Speech-to-Text',
-    pendingSub: 'Waiting...',
-    activeSub: 'Transcribing with Whisper / Sarvam AI...',
-    doneSub: 'Transcript complete',
-    errorSub: 'Transcription failed',
+    label: "Speech-to-Text",
+    pendingSub: "Waiting...",
+    activeSub: "Transcribing with Whisper / Sarvam AI...",
+    doneSub: "Transcript complete",
+    errorSub: "Transcription failed",
   },
   {
-    label: 'Summarizing',
-    pendingSub: 'Waiting...',
-    activeSub: 'Analyzing with Mistral AI...',
-    doneSub: 'Insights generated',
-    errorSub: 'Analysis failed',
+    label: "Summarizing",
+    pendingSub: "Waiting...",
+    activeSub: "Analyzing with Mistral AI...",
+    doneSub: "Insights generated",
+    errorSub: "Analysis failed",
   },
   {
-    label: 'Vector DB Indexing',
-    pendingSub: 'Waiting...',
-    activeSub: 'Embedding into Qdrant...',
-    doneSub: 'Knowledge indexed',
-    errorSub: 'Indexing failed',
+    label: "Vector DB Indexing",
+    pendingSub: "Waiting...",
+    activeSub: "Embedding into Qdrant...",
+    doneSub: "Knowledge indexed",
+    errorSub: "Indexing failed",
   },
-]
+];
 
 const LOG_LINES = [
-  { text: '> [SYSTEM] Pipeline initialized', color: 'text-accent-green' },
-  { text: '> [AUDIO] Extracting audio stream...', color: 'text-mute' },
-  { text: '> [STT] Using Whisper-large-v3-turbo', color: 'text-mute' },
-  { text: '> [LLM] Mistral AI summarization temp: 0.3', color: 'text-mute' },
-  { text: '> [INDEX] Calculating embeddings...', color: 'text-accent-blue' },
-  { text: '> [INDEX] Sharding vector set...', color: 'text-accent-blue' },
-  { text: '> [INDEX] Writing to Qdrant cluster...', color: 'text-accent-blue' },
-]
+  { text: "> [SYSTEM] Pipeline initialized", color: "text-accent-green" },
+  { text: "> [AUDIO] Extracting audio stream...", color: "text-mute" },
+  { text: "> [STT] Using Whisper-large-v3-turbo", color: "text-mute" },
+  { text: "> [LLM] Mistral AI summarization temp: 0.3", color: "text-mute" },
+  { text: "> [INDEX] Calculating embeddings...", color: "text-accent-blue" },
+  { text: "> [INDEX] Sharding vector set...", color: "text-accent-blue" },
+  { text: "> [INDEX] Writing to Qdrant cluster...", color: "text-accent-blue" },
+];
 
 function ProcessingContent() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const source = searchParams.get('source') ?? ''
-  const language = searchParams.get('language') ?? 'english'
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const source = searchParams.get("source") ?? "";
+  const language = searchParams.get("language") ?? "english";
 
   const [stepStatuses, setStepStatuses] = useState<StepStatus[]>([
-    'pending', 'pending', 'pending', 'pending',
-  ])
-  const [error, setError] = useState<string | null>(null)
-  const [logIdx, setLogIdx] = useState(0)
+    "pending",
+    "pending",
+    "pending",
+    "pending",
+  ]);
+  const [error, setError] = useState<string | null>(null);
+  const [logIdx, setLogIdx] = useState(0);
   // Stored so retries resume from the same backend checkpoint
-  const meetingIdRef = useRef<string | null>(null)
-  const started = useRef(false)
+  const meetingIdRef = useRef<string | null>(null);
+  const started = useRef(false);
 
   const runStream = useCallback(
     async (retryMeetingId?: string) => {
-      setError(null)
+      setError(null);
 
       try {
         const result = await analyzeSourceStream(
           { source, language, meeting_id: retryMeetingId },
           {
             onStart: (id) => {
-              meetingIdRef.current = id
+              meetingIdRef.current = id;
             },
             onStep: (step, status) => {
               setStepStatuses((prev) => {
-                const next = [...prev]
-                next[step] = status
-                return next
-              })
+                const next = [...prev];
+                next[step] = status;
+                return next;
+              });
             },
           },
-        )
+        );
 
-        setStepStatuses(['done', 'done', 'done', 'done'])
-        saveResult(result)
-        setTimeout(() => router.push('/results'), 900)
+        setStepStatuses(["done", "done", "done", "done"]);
+        saveResult(result);
+        setTimeout(() => router.push("/results"), 900);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'An unexpected error occurred'
-        setError(msg)
+        const msg =
+          err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(msg);
         // Mark the actively-running step as errored; leave already-done steps green
-        setStepStatuses((prev) => prev.map((s) => (s === 'active' ? 'error' : s)))
+        setStepStatuses((prev) =>
+          prev.map((s) => (s === "active" ? "error" : s)),
+        );
       }
     },
     [source, language, router],
-  )
+  );
 
   useEffect(() => {
-    if (started.current) return
-    started.current = true
+    if (started.current) return;
+    started.current = true;
 
     const logInterval = setInterval(
       () => setLogIdx((i) => (i + 1) % LOG_LINES.length),
       2800,
-    )
+    );
 
-    runStream()
-    return () => clearInterval(logInterval)
-  }, [runStream])
+    runStream();
+    return () => clearInterval(logInterval);
+  }, [runStream]);
 
   const handleRetry = () => {
     // Reset only the errored step back to pending; keep already-done steps green.
     // The backend will immediately re-emit "done" events for those steps,
     // then resume from the failed one.
-    setStepStatuses((prev) => prev.map((s) => (s === 'error' ? 'pending' : s)))
-    runStream(meetingIdRef.current ?? undefined)
-  }
+    setStepStatuses((prev) => prev.map((s) => (s === "error" ? "pending" : s)));
+    runStream(meetingIdRef.current ?? undefined);
+  };
 
-  const allDone = stepStatuses.every((s) => s === 'done')
-  const hasError = stepStatuses.some((s) => s === 'error')
-  const doneCount = stepStatuses.filter((s) => s === 'done').length
-  const lineProgress = allDone ? 100 : doneCount === 0 ? 0 : (doneCount / STEPS.length) * 85
+  const allDone = stepStatuses.every((s) => s === "done");
+  const hasError = stepStatuses.some((s) => s === "error");
+  const doneCount = stepStatuses.filter((s) => s === "done").length;
+  const lineProgress = allDone
+    ? 100
+    : doneCount === 0
+      ? 0
+      : (doneCount / STEPS.length) * 85;
 
   return (
     <main className="flex-grow pt-20 relative overflow-hidden flex flex-col items-center justify-center min-h-screen">
@@ -138,21 +148,21 @@ function ProcessingContent() {
         {hasError ? (
           <h1
             className="font-display-xl text-accent-red text-center mb-section tracking-tighter"
-            style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
+            style={{ fontSize: "clamp(32px, 5vw, 64px)" }}
           >
             Processing failed
           </h1>
         ) : allDone ? (
           <h1
             className="font-display-xl text-accent-green text-center mb-section tracking-tighter"
-            style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
+            style={{ fontSize: "clamp(32px, 5vw, 64px)" }}
           >
             Analysis complete!
           </h1>
         ) : (
           <h1
             className="font-display-xl text-primary text-center mb-section tracking-tighter"
-            style={{ fontSize: 'clamp(32px, 5vw, 64px)' }}
+            style={{ fontSize: "clamp(32px, 5vw, 64px)" }}
           >
             Processing meeting...
           </h1>
@@ -175,22 +185,25 @@ function ProcessingContent() {
           )}
 
           {STEPS.map((step, i) => {
-            const status = stepStatuses[i]
+            const status = stepStatuses[i];
             return (
-              <div key={step.label} className="flex items-start gap-xxl pb-xxl relative">
+              <div
+                key={step.label}
+                className="flex items-start gap-xxl pb-xxl relative"
+              >
                 {/* Step indicator */}
                 <div
                   className={`z-10 w-6 h-6 rounded-full flex items-center justify-center border-4 border-canvas transition-all duration-500 ${
-                    status === 'done'
-                      ? 'bg-accent-blue'
-                      : status === 'active'
-                        ? 'bg-canvas border-2 border-accent-blue step-pulse'
-                        : status === 'error'
-                          ? 'bg-accent-red'
-                          : 'bg-surface-container-high border-2 border-hairline-strong'
+                    status === "done"
+                      ? "bg-accent-blue"
+                      : status === "active"
+                        ? "bg-canvas border-2 border-accent-blue step-pulse"
+                        : status === "error"
+                          ? "bg-accent-red"
+                          : "bg-surface-container-high border-2 border-hairline-strong"
                   }`}
                 >
-                  {status === 'done' && (
+                  {status === "done" && (
                     <span
                       className="material-symbols-outlined text-canvas font-bold"
                       style={{ fontSize: 14 }}
@@ -198,10 +211,10 @@ function ProcessingContent() {
                       check
                     </span>
                   )}
-                  {status === 'active' && (
+                  {status === "active" && (
                     <div className="w-2 h-2 rounded-full bg-accent-blue" />
                   )}
-                  {status === 'error' && (
+                  {status === "error" && (
                     <span
                       className="material-symbols-outlined text-canvas"
                       style={{ fontSize: 14 }}
@@ -215,42 +228,42 @@ function ProcessingContent() {
                 <div className="flex flex-col">
                   <span
                     className={`font-headline-sm text-headline-sm transition-colors duration-300 ${
-                      status === 'active'
-                        ? 'text-accent-blue'
-                        : status === 'done'
-                          ? 'text-primary'
-                          : status === 'error'
-                            ? 'text-accent-red'
-                            : 'text-mute'
+                      status === "active"
+                        ? "text-accent-blue"
+                        : status === "done"
+                          ? "text-primary"
+                          : status === "error"
+                            ? "text-accent-red"
+                            : "text-mute"
                     }`}
                   >
                     {step.label}
                   </span>
                   <span className="font-code-md text-code-md text-ash mt-xxs">
-                    {status === 'done'
+                    {status === "done"
                       ? step.doneSub
-                      : status === 'active'
+                      : status === "active"
                         ? step.activeSub
-                        : status === 'error'
+                        : status === "error"
                           ? step.errorSub
                           : step.pendingSub}
                   </span>
-                  {status === 'active' && !hasError && (
+                  {status === "active" && !hasError && (
                     <span className="flex gap-1 mt-xs">
                       <span
                         className="w-1 h-1 bg-accent-blue rounded-full animate-bounce"
-                        style={{ animationDelay: '-0.3s' }}
+                        style={{ animationDelay: "-0.3s" }}
                       />
                       <span
                         className="w-1 h-1 bg-accent-blue rounded-full animate-bounce"
-                        style={{ animationDelay: '-0.15s' }}
+                        style={{ animationDelay: "-0.15s" }}
                       />
                       <span className="w-1 h-1 bg-accent-blue rounded-full animate-bounce" />
                     </span>
                   )}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
 
@@ -266,7 +279,7 @@ function ProcessingContent() {
                 Retry from failed step
               </button>
               <button
-                onClick={() => router.push('/upload')}
+                onClick={() => router.push("/upload")}
                 className="text-body-sm text-mute hover:text-primary transition-colors underline"
               >
                 Start over
@@ -285,14 +298,14 @@ function ProcessingContent() {
           <div className="mt-section flex flex-col items-center gap-xl w-full">
             <div className="w-full h-px bg-hairline-strong" />
             <button
-              onClick={() => router.push('/upload')}
+              onClick={() => router.push("/upload")}
               className="bg-surface-elevated text-primary border border-hairline-strong px-xxl py-sm rounded-lg text-button-md font-button-md hover:bg-surface-container-high transition-colors active:scale-95"
             >
               Cancel
             </button>
             <p className="text-caption text-mute text-center max-w-sm">
-              Canceling will stop watching the pipeline. The backend will continue briefly
-              but results won&apos;t be saved.
+              Canceling will stop watching the pipeline. The backend will
+              continue briefly but results won&apos;t be saved.
             </p>
           </div>
         )}
@@ -315,8 +328,8 @@ function ProcessingContent() {
             <p
               key={i}
               className={`transition-opacity duration-500 ${
-                i <= logIdx ? line.color : 'opacity-20'
-              } ${i === logIdx ? 'animate-pulse' : ''}`}
+                i <= logIdx ? line.color : "opacity-20"
+              } ${i === logIdx ? "animate-pulse" : ""}`}
             >
               {line.text}
             </p>
@@ -324,7 +337,7 @@ function ProcessingContent() {
         </div>
       </div>
     </main>
-  )
+  );
 }
 
 export default function ProcessingPage() {
@@ -338,5 +351,5 @@ export default function ProcessingPage() {
     >
       <ProcessingContent />
     </Suspense>
-  )
+  );
 }

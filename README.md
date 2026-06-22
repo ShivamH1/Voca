@@ -82,6 +82,40 @@ The backend API routing has been modularized under `apps/backend/api/`:
 
 ---
 
+## 📸 Application Screenshots
+
+Here is a visual walkthrough of the Voca user interface, showcasing the premium, pitch-black editorial design system with high-contrast typography and subtle atmospheric glows:
+
+### 1. Landing Page
+*A clean, high-conversion entry point introducing Voca's capability to process video/audio files and YouTube links.*
+![Landing Page](apps/web/public/screenshots/landing_page.png)
+
+### 2. Upload / Submission Form
+*Simple drag-and-drop interface or YouTube URL submit form to kickstart meeting analysis.*
+![Upload Page](apps/web/public/screenshots/upload_page.png)
+
+### 3. Real-Time Pipeline Progress (SSE Stream)
+*Visual progress indicator showing real-time state changes and live console logs as Voca processes steps.*
+![Processing Page](apps/web/public/screenshots/processing_page.png)
+
+### 4. Interactive Results Dashboard
+*Beautiful, structured dashboard featuring an Executive Summary, checkable Action Items, key Decisions, and Open Questions.*
+![Results Page](apps/web/public/screenshots/results_page.png)
+
+### 5. Chat Interface (Welcome State)
+*A custom-built chatbot window with suggested prompts based on the analysis context.*
+![Chat Welcome](apps/web/public/screenshots/chat_page.png)
+
+### 6. RAG-Enabled Active Chat
+*Ask specific questions about the meeting transcript and receive context-aware, structured answers in real time.*
+![Chat Active](apps/web/public/screenshots/chat_active_page.png)
+
+### 7. Historical Meeting Registry
+*Browse all previously analyzed meetings, jump back to results or chat, and manage past sessions.*
+![History Page](apps/web/public/screenshots/history_page.png)
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
