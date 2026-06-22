@@ -28,6 +28,7 @@ SARVAM_PIECE_SECONDS: int = 25
 QDRANT_URL: str | None = os.getenv("QDRANT_URL")
 QDRANT_API_KEY: str | None = os.getenv("QDRANT_API_KEY")
 QDRANT_LOCAL_PATH: str = "qdrant_db"
+COLLECTION_PREFIX: str = os.getenv("COLLECTION_PREFIX", "voca")
 EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
 VECTOR_CHUNK_SIZE: int = 500
 VECTOR_CHUNK_OVERLAP: int = 50
@@ -39,4 +40,4 @@ AUDIO_CHUNK_MINUTES: int = 10
 
 def collection_name(meeting_id: str) -> str:
     """Derive a Qdrant-safe collection name from a meeting UUID."""
-    return f"meeting_{meeting_id.replace('-', '')}"
+    return f"{COLLECTION_PREFIX}_meeting_{meeting_id.replace('-', '')}"
