@@ -12,8 +12,7 @@ langchain-mistralai
 langchain-qdrant
 qdrant-client
 langchain-community
-sentence-transformers
-langchain-huggingface
+fastembed
 audioop-lts; python_version >= "3.13"
 ffmpeg
 static-ffmpeg

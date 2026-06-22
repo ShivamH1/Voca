@@ -29,7 +29,7 @@ QDRANT_URL: str | None = os.getenv("QDRANT_URL")
 QDRANT_API_KEY: str | None = os.getenv("QDRANT_API_KEY")
 QDRANT_LOCAL_PATH: str = "qdrant_db"
 COLLECTION_PREFIX: str = os.getenv("COLLECTION_PREFIX", "voca")
-EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 VECTOR_CHUNK_SIZE: int = 500
 VECTOR_CHUNK_OVERLAP: int = 50
 

@@ -1,7 +1,7 @@
 from langchain_qdrant import QdrantVectorStore
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 from config import (
@@ -13,9 +13,7 @@ from config import (
     VECTOR_CHUNK_OVERLAP,
 )
 
-_embeddings = HuggingFaceEmbeddings(
-    model_name=EMBEDDING_MODEL, model_kwargs={"device": "cpu"}
-)
+_embeddings = FastEmbedEmbeddings(model_name=EMBEDDING_MODEL)
 
 
 def get_client() -> QdrantClient:
