@@ -29,9 +29,13 @@ os.makedirs(config.DOWNLOAD_DIR, exist_ok=True)
 
 app = FastAPI(title="Voca Intelligence API", version="1.0.0")
 
+_cors_origins = ["http://localhost:3000", "http://localhost:3001"]
+if os.environ.get("FRONTEND_URL"):
+    _cors_origins.append(os.environ["FRONTEND_URL"].rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

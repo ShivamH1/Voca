@@ -1,0 +1,12 @@
+node_modules/
+apps/backend/.venv/
+apps/backend/downloads/
+apps/backend/qdrant_db/
+apps/backend/__pycache__/
+apps/web/.next/
+**/*.pyc
+**/.env.local
+**/.env
+apps/web/stitch_omniscribe/
+.git/
+.turbo/
