@@ -50,38 +50,6 @@ graph LR
 
 ---
 
-## ✨ Features & New Additions
-
-### 1. Stateful Pipeline Execution & SSE Streaming
-* **SSE Stream (`/api/analyze/stream`)**: Real-time progress updates are sent to the client via Server-Sent Events (SSE) as each pipeline step finishes.
-* **Pipeline Checkpoints (Fault Tolerance)**: After Step 1 (Transcription) and Step 2 (LLM Analysis), progress is saved in `meetings.json`. If a run fails due to network or API issues, the client can resume by submitting the same `meeting_id` to skip already completed steps.
-
-### 2. Multi-Session Support & Meeting History
-* **Distinct Qdrant Collections**: Instead of overwriting a single collection, each meeting gets a unique Qdrant collection name (`meeting_<uuid>`). Deleting a meeting also clears its vector collection.
-* **Persistent History & Chat logs**: All completed analyses and corresponding RAG chat messages are stored in `meetings.json` inside the backend directory.
-
-### 3. Modular Backend Routing
-The backend API routing has been modularized under `apps/backend/api/`:
-- `upload.py`: Handles raw audio/video uploads.
-- `analyze.py`: Manages blocking and streaming analysis routes.
-- `chat.py`: Directs context-aware RAG queries.
-- `history.py`: Lists, details, and deletes historical sessions and conversations.
-
----
-
-## 🛠️ Tech Stack
-
-- **Monorepo Manager**: Turborepo & Bun
-- **Frontend**: Next.js (TypeScript), Tailwind CSS
-- **Backend**: Python 3.10+, FastAPI, LangChain
-- **Vector Database**: Qdrant (supports both local disk-based DB and Qdrant Cloud)
-- **AI Models**:
-  - **Transcription**: Whisper (`openai/whisper-large-v3-turbo` via HF Inference) / Sarvam AI (Hinglish translation)
-  - **Intelligence & LLM**: Mistral AI (`mistral-small-latest` via LangChain)
-  - **Embeddings**: `all-MiniLM-L6-v2` via HuggingFace
-
----
-
 ## 📸 Application Screenshots
 
 Here is a visual walkthrough of the Voca user interface, showcasing the premium, pitch-black editorial design system with high-contrast typography and subtle atmospheric glows:
@@ -114,6 +82,38 @@ Here is a visual walkthrough of the Voca user interface, showcasing the premium,
 *Browse all previously analyzed meetings, jump back to results or chat, and manage past sessions.*
 ![History Page](apps/web/public/screenshots/history_page.png)
 
+---
+
+## ✨ Features & New Additions
+
+### 1. Stateful Pipeline Execution & SSE Streaming
+* **SSE Stream (`/api/analyze/stream`)**: Real-time progress updates are sent to the client via Server-Sent Events (SSE) as each pipeline step finishes.
+* **Pipeline Checkpoints (Fault Tolerance)**: After Step 1 (Transcription) and Step 2 (LLM Analysis), progress is saved in `meetings.json`. If a run fails due to network or API issues, the client can resume by submitting the same `meeting_id` to skip already completed steps.
+
+### 2. Multi-Session Support & Meeting History
+* **Distinct Qdrant Collections**: Instead of overwriting a single collection, each meeting gets a unique Qdrant collection name (`meeting_<uuid>`). Deleting a meeting also clears its vector collection.
+* **Persistent History & Chat logs**: All completed analyses and corresponding RAG chat messages are stored in `meetings.json` inside the backend directory.
+
+### 3. Modular Backend Routing
+The backend API routing has been modularized under `apps/backend/api/`:
+- `upload.py`: Handles raw audio/video uploads.
+- `analyze.py`: Manages blocking and streaming analysis routes.
+- `chat.py`: Directs context-aware RAG queries.
+- `history.py`: Lists, details, and deletes historical sessions and conversations.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Monorepo Manager**: Turborepo & Bun
+- **Frontend**: Next.js (TypeScript), Tailwind CSS
+- **Backend**: Python 3.10+, FastAPI, LangChain
+- **Vector Database**: Qdrant (supports both local disk-based DB and Qdrant Cloud)
+- **AI Models**:
+  - **Transcription**: Whisper (`openai/whisper-large-v3-turbo` via HF Inference) / Sarvam AI (Hinglish translation)
+  - **Intelligence & LLM**: Mistral AI (`mistral-small-latest` via LangChain)
+  - **Embeddings**: `all-MiniLM-L6-v2` via HuggingFace
+    
 ---
 
 ## 🚀 Getting Started
