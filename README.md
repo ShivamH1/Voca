@@ -1,5 +1,7 @@
 # Voca: AI-Powered Meeting Intelligence Platform
 
+<video src="https://github.com/user-attachments/assets/643c95f2-94dd-43d1-b6d2-6995a8b3bb03" width="100%" controls></video>
+
 Voca (AI Video Helper) is a high-fidelity meeting intelligence platform that transforms video/audio files or YouTube links into a searchable, actionable knowledge base. It handles the complete pipeline: downloading audio, transcribing with language-specific routing (English & Hinglish), extracting executive summaries, and indexing transcripts into a vector database for natural language chat (RAG).
 
 The user interface follows a premium, editorial design system inspired by Resend—featuring a pure black canvas, high-contrast typography, and low-opacity atmospheric glows.
@@ -79,40 +81,6 @@ The backend API routing has been modularized under `apps/backend/api/`:
   - **Transcription**: Whisper (`openai/whisper-large-v3-turbo` via HF Inference) / Sarvam AI (Hinglish translation)
   - **Intelligence & LLM**: Mistral AI (`mistral-small-latest` via LangChain)
   - **Embeddings**: `all-MiniLM-L6-v2` via HuggingFace
-
----
-
-## 📸 Application Screenshots
-
-Here is a visual walkthrough of the Voca user interface, showcasing the premium, pitch-black editorial design system with high-contrast typography and subtle atmospheric glows:
-
-### 1. Landing Page
-*A clean, high-conversion entry point introducing Voca's capability to process video/audio files and YouTube links.*
-![Landing Page](apps/web/public/screenshots/landing_page.png)
-
-### 2. Upload / Submission Form
-*Simple drag-and-drop interface or YouTube URL submit form to kickstart meeting analysis.*
-![Upload Page](apps/web/public/screenshots/upload_page.png)
-
-### 3. Real-Time Pipeline Progress (SSE Stream)
-*Visual progress indicator showing real-time state changes and live console logs as Voca processes steps.*
-![Processing Page](apps/web/public/screenshots/processing_page.png)
-
-### 4. Interactive Results Dashboard
-*Beautiful, structured dashboard featuring an Executive Summary, checkable Action Items, key Decisions, and Open Questions.*
-![Results Page](apps/web/public/screenshots/results_page.png)
-
-### 5. Chat Interface (Welcome State)
-*A custom-built chatbot window with suggested prompts based on the analysis context.*
-![Chat Welcome](apps/web/public/screenshots/chat_page.png)
-
-### 6. RAG-Enabled Active Chat
-*Ask specific questions about the meeting transcript and receive context-aware, structured answers in real time.*
-![Chat Active](apps/web/public/screenshots/chat_active_page.png)
-
-### 7. Historical Meeting Registry
-*Browse all previously analyzed meetings, jump back to results or chat, and manage past sessions.*
-![History Page](apps/web/public/screenshots/history_page.png)
 
 ---
 
