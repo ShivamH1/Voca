@@ -1,6 +1,6 @@
 # Voca: AI-Powered Meeting Intelligence Platform
 
-<video src="https://github.com/user-attachments/assets/643c95f2-94dd-43d1-b6d2-6995a8b3bb03" width="100%" controls></video>
+<video src="https://github.com/user-attachments/assets/b60ebb44-70b1-4c96-b872-ed8c665a006c" width="100%" controls></video>
 
 Voca (AI Video Helper) is a high-fidelity meeting intelligence platform that transforms video/audio files or YouTube links into a searchable, actionable knowledge base. It handles the complete pipeline: downloading audio, transcribing with language-specific routing (English & Hinglish), extracting executive summaries, and indexing transcripts into a vector database for natural language chat (RAG).
 
